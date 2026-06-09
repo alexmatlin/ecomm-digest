@@ -6,7 +6,23 @@
       "Bash(git push *)",
       "Bash(npx --version)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "WebFetch(domain:www.modernretail.co)",
+      "WebFetch(domain:techcrunch.com)",
+      "WebFetch(domain:digiday.com)",
+      "WebFetch(domain:www.supplychaindive.com)",
+      "WebFetch(domain:www.bankingdive.com)",
+      "WebFetch(domain:www.paymentsdive.com)",
+      "WebFetch(domain:debanked.com)",
+      "WebFetch(domain:www.coindesk.com)",
+      "WebFetch(domain:www.finextra.com)",
+      "WebFetch(domain:openai.com)",
+      "WebFetch(domain:deepmind.google)",
+      "WebFetch(domain:www.latent.space)",
+      "WebFetch(domain:www.nextplatform.com)",
+      "WebFetch(domain:www.ciodive.com)",
+      "WebFetch(domain:importai.substack.com)",
+      "WebFetch(domain:news.crunchbase.com)"
     ]
   }
 }
