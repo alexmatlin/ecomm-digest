@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import feedparser
+import ftfy
 from dateutil import parser as dateparser
 
 from .config import SOURCES_FILE, MAX_AGE_HOURS
@@ -25,6 +26,23 @@ USER_AGENT = (
 
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 _WHITESPACE_RE = re.compile(r"\s+")
+
+# URL path fragments that mark non-news items (events, webinars, sponsored,
+# whitepapers, podcasts). These pollute summaries with conference promos.
+_NON_NEWS_URL_PATTERNS = (
+    "/event-info/",
+    "/events/",
+    "/webinar/",
+    "/webinars/",
+    "/whitepaper/",
+    "/whitepapers/",
+    "/podcast/",
+    "/podcasts/",
+    "/sponsored/",
+    "/sponsor/",
+    "/jobs/",
+    "/job-board/",
+)
 
 
 @dataclass
@@ -67,6 +85,9 @@ class Article:
 def _strip_html(s: str) -> str:
     if not s:
         return ""
+    # Fix mojibake from feeds with wrong Content-Type charset header
+    # (e.g. UTF-8 bytes mis-decoded as Latin-1 → em-dash "—" becomes "â€"" or "â")
+    s = ftfy.fix_text(s)
     # Strip tags
     s = _HTML_TAG_RE.sub(" ", s)
     # Decode entities (&rsquo; → ’ etc). Run twice to catch double-encoded inputs.
@@ -128,10 +149,17 @@ def fetch_one(source: dict) -> list[Article]:
         return []
 
     articles: list[Article] = []
+    skipped_non_news = 0
     for entry in parsed.entries:
         title = _strip_html(entry.get("title", "")).strip()
         link = (entry.get("link") or "").strip()
         if not title or not link:
+            continue
+
+        # Drop events, webinars, podcasts, whitepapers — they aren't news
+        link_lower = link.lower()
+        if any(p in link_lower for p in _NON_NEWS_URL_PATTERNS):
+            skipped_non_news += 1
             continue
 
         # Body can live in several fields depending on feed flavor
@@ -163,7 +191,8 @@ def fetch_one(source: dict) -> list[Article]:
         articles.append(article)
 
     log.info(
-        "fetch done source=%s entries=%d", source["id"], len(articles)
+        "fetch done source=%s entries=%d skipped_non_news=%d",
+        source["id"], len(articles), skipped_non_news,
     )
     return articles
 

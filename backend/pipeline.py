@@ -48,11 +48,13 @@ def select(
     articles: list[Article],
 ) -> tuple[dict[str, Article | None], dict[str, list[Article]]]:
     """
-    Per vertical: top-scoring article → lead; next N (with subtopic spread) → briefings.
+    Per vertical: top-scoring article → lead; next N → briefings.
 
-    Subtopic spread: we try not to fill a chapter with the same subtopic. We
-    walk the score-ordered list and skip a candidate if its subtopic already
-    has 3 picks (when total slots ≥ 6) so that no single subtopic dominates.
+    Subtopic spread (two-pass):
+      Pass 1 — hard cap of 3 per subtopic. Walk score-ordered candidates;
+               skip any whose subtopic is already at 3.
+      Pass 2 — if we ended pass 1 below target, fill remaining slots from
+               leftover candidates (over-cap allowed) to avoid sparse pages.
     """
     by_vertical: dict[str, list[Article]] = defaultdict(list)
     for a in articles:
@@ -77,14 +79,39 @@ def select(
         remaining = candidates[LEAD_PER_VERTICAL:]
         picks: list[Article] = []
         subtopic_counts: dict[str, int] = defaultdict(int)
+        picked_ids: set[int] = set()
+
+        # Pass 1: hard cap 3-per-subtopic
         for cand in remaining:
             if len(picks) >= BRIEFINGS_PER_VERTICAL:
                 break
-            # Soft cap: max 3 per subtopic if we have enough variety to spare
-            if subtopic_counts[cand.subtopic] >= 3 and len(picks) >= 6:
+            if subtopic_counts[cand.subtopic] >= 3:
                 continue
             picks.append(cand)
+            picked_ids.add(id(cand))
             subtopic_counts[cand.subtopic] += 1
+
+        # Pass 2: overflow fill if still below target.
+        # Prefer under-represented subtopics first to preserve spread; within
+        # each subtopic, still score-order. This stops one dominant source
+        # (e.g. FreightWaves) from flooding the page when leftovers are biased.
+        if len(picks) < BRIEFINGS_PER_VERTICAL:
+            overflow_before = len(picks)
+            leftover = [c for c in remaining if id(c) not in picked_ids]
+            # Sort leftover by (current subtopic count, -score) — lowest count + highest score wins
+            leftover.sort(key=lambda c: (subtopic_counts[c.subtopic], -c.score))
+            for cand in leftover:
+                if len(picks) >= BRIEFINGS_PER_VERTICAL:
+                    break
+                picks.append(cand)
+                picked_ids.add(id(cand))
+                subtopic_counts[cand.subtopic] += 1
+            if len(picks) > overflow_before:
+                logging.info(
+                    "select %s: pass-2 overflow added %d (spread-aware)",
+                    v, len(picks) - overflow_before,
+                )
+
         briefings[v] = picks
 
         logging.info(
