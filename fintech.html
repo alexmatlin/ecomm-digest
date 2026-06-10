@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fintech — The Digest</title>
+    <meta name="description" content="Payments, banking, stablecoins, and embedded finance — the rails carrying the next trillion in commerce. Daily distillation from The Digest.">
+    <meta name="theme-color" content="#F0EEE6">
+    <meta property="og:title" content="Fintech — The Digest">
+    <meta property="og:description" content="Payments, banking, stablecoins, and embedded finance — the rails carrying the next trillion in commerce.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://coruscating-platypus-eccfd0.netlify.app/fintech.html">
+    <meta property="og:site_name" content="The Digest">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Fintech — The Digest">
+    <meta name="twitter:description" content="Payments, banking, stablecoins, and embedded finance — the rails carrying the next trillion in commerce.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,16 +25,21 @@
                 <span class="logo-text">The Digest</span>
             </a>
             <nav class="site-nav">
-                <a href="ecommerce.html">E-commerce</a>
-                <a href="fintech.html" class="active">Fintech</a>
-                <a href="ai.html">AI</a>
+                <a href="ecommerce.html" data-short="Ecomm">E-commerce</a>
+                <a href="fintech.html" class="active" data-short="Fintech">Fintech</a>
+                <a href="ai.html" data-short="AI">AI</a>
             </nav>
             <div class="header-right">
                 <div class="header-search">
                     <input type="search" id="header-search-input" placeholder="Search stories…" aria-label="Search stories">
                 </div>
+                <button class="search-toggle" type="button" aria-label="Search" aria-expanded="false">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </button>
                 <button class="theme-toggle" type="button" aria-label="Toggle dark mode">☾</button>
-                <a href="#subscribe" class="btn-subscribe">Subscribe</a>
+            </div>
+            <div class="header-search-dropdown">
+                <input type="search" id="mobile-search-input" placeholder="Search stories…" aria-label="Search stories">
             </div>
         </div>
     </header>
@@ -31,7 +47,7 @@
     <main>
         <section class="hero">
             <div class="container">
-                <p class="hero-eyebrow">Fintech · Monday, June 9, 2026</p>
+                <p class="hero-eyebrow">Fintech · <span class="hero-eyebrow-date">Monday, June 9, 2026</span></p>
                 <h1 class="hero-title">The rails carrying the next trillion in commerce.</h1>
                 <p class="hero-lede">Payments, banking, stablecoins, and embedded finance — the platforms and policies reshaping how money moves.</p>
             </div>
@@ -187,6 +203,7 @@
         </div>
     </footer>
 
+    <script src="date.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

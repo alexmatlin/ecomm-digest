@@ -151,11 +151,76 @@
         apply();
     }
 
+    // ---------- Header shrink on scroll ----------
+    function initScrollShrink() {
+        const header = document.querySelector('.site-header');
+        if (!header) return;
+        const THRESHOLD = 60;
+        function update() {
+            header.classList.toggle('is-scrolled', window.scrollY > THRESHOLD);
+        }
+        window.addEventListener('scroll', update, { passive: true });
+        update();
+    }
+
+    // ---------- Mobile search toggle ----------
+    function initSearchToggle() {
+        const toggle = document.querySelector('.search-toggle');
+        const dropdown = document.querySelector('.header-search-dropdown');
+        const dropdownInput = document.getElementById('mobile-search-input');
+        const desktopInput = document.getElementById('header-search-input');
+        const header = document.querySelector('.site-header');
+        if (!toggle || !dropdown || !dropdownInput) return;
+
+        toggle.addEventListener('click', () => {
+            const isOpen = header.classList.toggle('search-open');
+            toggle.setAttribute('aria-expanded', isOpen);
+            if (isOpen) {
+                dropdownInput.focus();
+            } else {
+                dropdownInput.value = '';
+                // Clear filter if we had typed something
+                if (desktopInput) { desktopInput.value = ''; }
+                document.dispatchEvent(new Event('digest:search-clear'));
+            }
+        });
+
+        // Sync mobile input → shared filter logic
+        dropdownInput.addEventListener('input', () => {
+            // Mirror value to desktop input and fire an input event so
+            // the existing initFilters() handler picks it up.
+            if (desktopInput) {
+                desktopInput.value = dropdownInput.value;
+                desktopInput.dispatchEvent(new Event('input'));
+            }
+        });
+
+        // Close on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && header.classList.contains('search-open')) {
+                header.classList.remove('search-open');
+                dropdownInput.value = '';
+                toggle.setAttribute('aria-expanded', false);
+            }
+        });
+
+        // Close when clicking outside the header
+        document.addEventListener('click', (e) => {
+            if (!header.contains(e.target)) {
+                header.classList.remove('search-open');
+                dropdownInput.value = '';
+                toggle.setAttribute('aria-expanded', false);
+            }
+        });
+    }
+
     // ---------- Init ----------
     function init() {
         initTheme();
+        initScrollShrink();
         initScrollReveal();
         initFilters();
+        initSearchToggle();
     }
 
     if (document.readyState === 'loading') {

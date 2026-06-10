@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Digest — E-commerce, Fintech, AI</title>
+    <meta name="description" content="A daily distillation of the most consequential moves across e-commerce, fintech, and AI. For operators, builders, and investors.">
+    <meta name="theme-color" content="#F0EEE6">
+    <meta property="og:title" content="The Digest — E-commerce, Fintech, AI">
+    <meta property="og:description" content="A daily distillation of the most consequential moves across e-commerce, fintech, and AI. For operators, builders, and investors.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://coruscating-platypus-eccfd0.netlify.app/">
+    <meta property="og:site_name" content="The Digest">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="The Digest — E-commerce, Fintech, AI">
+    <meta name="twitter:description" content="A daily distillation of the most consequential moves across e-commerce, fintech, and AI.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,16 +25,21 @@
                 <span class="logo-text">The Digest</span>
             </a>
             <nav class="site-nav">
-                <a href="ecommerce.html">E-commerce</a>
-                <a href="fintech.html">Fintech</a>
-                <a href="ai.html">AI</a>
+                <a href="ecommerce.html" data-short="Ecomm">E-commerce</a>
+                <a href="fintech.html" data-short="Fintech">Fintech</a>
+                <a href="ai.html" data-short="AI">AI</a>
             </nav>
             <div class="header-right">
                 <div class="header-search">
                     <input type="search" id="header-search-input" placeholder="Search stories…" aria-label="Search stories">
                 </div>
+                <button class="search-toggle" type="button" aria-label="Search" aria-expanded="false">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </button>
                 <button class="theme-toggle" type="button" aria-label="Toggle dark mode">☾</button>
-                <a href="#subscribe" class="btn-subscribe">Subscribe</a>
+            </div>
+            <div class="header-search-dropdown">
+                <input type="search" id="mobile-search-input" placeholder="Search stories…" aria-label="Search stories">
             </div>
         </div>
     </header>
@@ -31,7 +47,7 @@
     <main>
         <section class="hero">
             <div class="container">
-                <p class="hero-eyebrow">E-commerce · Fintech · AI · Monday, June 9, 2026</p>
+                <p class="hero-eyebrow">E-commerce · Fintech · AI · <span class="hero-eyebrow-date">Monday, June 9, 2026</span></p>
                 <h1 class="hero-title">The three sectors reshaping how value moves.</h1>
                 <p class="hero-lede">A daily distillation of the most consequential moves across e-commerce, fintech, and AI — read by 42,000+ operators, builders, and investors.</p>
             </div>
@@ -45,7 +61,10 @@
                 </div>
                 <div class="topic-grid">
                     <a href="ecommerce.html" class="topic-card reveal">
-                        <span class="topic-glyph">▭</span>
+                        <svg class="topic-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M5 7h14l-1 14H6L5 7z"/>
+                            <path d="M9 7V5a3 3 0 0 1 6 0v2"/>
+                        </svg>
                         <h3>E-commerce</h3>
                         <p>Marketplaces, DTC brands, retail media, logistics, and the operators reshaping how goods move online.</p>
                         <div class="topic-latest">Latest</div>
@@ -54,7 +73,12 @@
                     </a>
 
                     <a href="fintech.html" class="topic-card reveal">
-                        <span class="topic-glyph">◆</span>
+                        <svg class="topic-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M14.5 9.5h-3.5a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4h-3.5"/>
+                            <path d="M12 7v1.5"/>
+                            <path d="M12 16.5V18"/>
+                        </svg>
                         <h3>Fintech</h3>
                         <p>Payments, banking, stablecoins, embedded finance, and the rails carrying the next trillion in commerce.</p>
                         <div class="topic-latest">Latest</div>
@@ -63,7 +87,9 @@
                     </a>
 
                     <a href="ai.html" class="topic-card reveal">
-                        <span class="topic-glyph">✦</span>
+                        <svg class="topic-glyph" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 2.5l1.5 8L22 12l-8.5 1.5L12 22l-1.5-8.5L2 12l8.5-1.5L12 2.5z"/>
+                        </svg>
                         <h3>AI</h3>
                         <p>Foundation models, agents, infrastructure, and the businesses being rebuilt around a new compute curve.</p>
                         <div class="topic-latest">Latest</div>
@@ -102,6 +128,7 @@
         </div>
     </footer>
 
+    <script src="date.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
