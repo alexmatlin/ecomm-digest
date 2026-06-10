@@ -1,0 +1,80 @@
+{# Shared chapter page body. Inputs:
+   active, hero_eyebrow_prefix, hero_title, hero_lede,
+   lead (Article), briefings (list[Article]),
+   filter_chips (list of {key,label}), numbers (list of {value,label}),
+   today_str, page_title, page_description, page_url, subtopic_labels,
+   current_year
+#}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% include 'partials/_meta.j2' %}
+</head>
+<body>
+{% include 'partials/_header.j2' %}
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <p class="hero-eyebrow">{{ hero_eyebrow_prefix }} · <span class="hero-eyebrow-date">{{ today_str }}</span></p>
+                <h1 class="hero-title">{{ hero_title }}</h1>
+                <p class="hero-lede">{{ hero_lede }}</p>
+            </div>
+        </section>
+
+{% if lead %}
+        <section class="featured" id="latest">
+            <div class="container">
+                <div class="section-head reveal">
+                    <h2>Today's lead</h2>
+                    <span class="section-meta">Updated this morning</span>
+                </div>
+                <article class="story-lead reveal">
+                    <div class="story-lead-meta">
+                        <span class="tag">{{ subtopic_labels[lead.subtopic] }}</span>
+                        <span class="dot">·</span>
+                        <span>{{ lead.read_minutes }} min read</span>
+                    </div>
+                    <h3><a href="{{ lead.url }}" target="_blank" rel="noopener">{{ lead.title }}</a></h3>
+                    <p>{{ lead.summary }}</p>
+                    <a href="{{ lead.url }}" class="read-more" target="_blank" rel="noopener">Read on {{ lead.source_name }} →</a>
+                </article>
+            </div>
+        </section>
+{% endif %}
+
+        <section class="grid-section">
+            <div class="container">
+                <div class="section-head">
+                    <h2>Briefings</h2>
+                    <span class="section-meta" id="briefings-count">{{ briefings|length }} stories</span>
+                </div>
+                <div class="filter-bar">
+                    <button class="filter-chip active" data-filter="all">All</button>
+{% for chip in filter_chips %}                    <button class="filter-chip" data-filter="{{ chip.key }}">{{ chip.label }}</button>
+{% endfor %}                </div>
+                <div class="story-grid">
+{% for a in briefings %}{% include 'partials/_story_card.j2' %}{% endfor %}                </div>
+            </div>
+        </section>
+
+{% if numbers %}
+        <section class="numbers">
+            <div class="container">
+                <h2 class="numbers-title reveal">The week in numbers</h2>
+                <div class="numbers-grid reveal">
+{% for n in numbers %}                    <div class="number-item">
+                        <div class="number-value">{{ n.value }}</div>
+                        <div class="number-label">{{ n.label }}</div>
+                    </div>
+{% endfor %}                </div>
+            </div>
+        </section>
+{% endif %}
+
+{% include 'partials/_subscribe.j2' %}
+    </main>
+
+{% include 'partials/_footer.j2' %}
+</body>
+</html>

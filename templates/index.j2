@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% include 'partials/_meta.j2' %}
+</head>
+<body>
+{% include 'partials/_header.j2' %}
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <p class="hero-eyebrow">E-commerce · Fintech · AI · <span class="hero-eyebrow-date">{{ today_str }}</span></p>
+                <h1 class="hero-title">The three sectors reshaping how value moves.</h1>
+                <p class="hero-lede">A daily distillation of the most consequential moves across e-commerce, fintech, and AI — read by 42,000+ operators, builders, and investors.</p>
+            </div>
+        </section>
+
+        <section class="topics">
+            <div class="container">
+                <div class="topics-head reveal">
+                    <h2>Three verticals. One daily read.</h2>
+                    <p>Pick a section to dive in — or subscribe to get the cross-sector digest in your inbox every weekday.</p>
+                </div>
+                <div class="topic-grid">
+                    <a href="ecommerce.html" class="topic-card reveal">
+                        <svg class="topic-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M5 7h14l-1 14H6L5 7z"/>
+                            <path d="M9 7V5a3 3 0 0 1 6 0v2"/>
+                        </svg>
+                        <h3>E-commerce</h3>
+                        <p>Marketplaces, DTC brands, retail media, logistics, and the operators reshaping how goods move online.</p>
+                        <div class="topic-latest">Latest</div>
+                        <p class="topic-snippet">{{ snippets.ecommerce }}</p>
+                        <div class="topic-cta">Explore E-commerce</div>
+                    </a>
+
+                    <a href="fintech.html" class="topic-card reveal">
+                        <svg class="topic-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M14.5 9.5h-3.5a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4h-3.5"/>
+                            <path d="M12 7v1.5"/>
+                            <path d="M12 16.5V18"/>
+                        </svg>
+                        <h3>Fintech</h3>
+                        <p>Payments, banking, stablecoins, embedded finance, and the rails carrying the next trillion in commerce.</p>
+                        <div class="topic-latest">Latest</div>
+                        <p class="topic-snippet">{{ snippets.fintech }}</p>
+                        <div class="topic-cta">Explore Fintech</div>
+                    </a>
+
+                    <a href="ai.html" class="topic-card reveal">
+                        <svg class="topic-glyph" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 2.5l1.5 8L22 12l-8.5 1.5L12 22l-1.5-8.5L2 12l8.5-1.5L12 2.5z"/>
+                        </svg>
+                        <h3>AI</h3>
+                        <p>Foundation models, agents, infrastructure, and the businesses being rebuilt around a new compute curve.</p>
+                        <div class="topic-latest">Latest</div>
+                        <p class="topic-snippet">{{ snippets.ai }}</p>
+                        <div class="topic-cta">Explore AI</div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+{% include 'partials/_subscribe.j2' %}
+    </main>
+
+{% include 'partials/_footer.j2' %}
+</body>
+</html>
