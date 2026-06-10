@@ -68,8 +68,12 @@ SUBTOPIC_LABELS = {
     "startups-funding": "Startups & Funding",
 }
 
-# === Scoring weights (v1: T2/T3 only, no general salience signal) ===
-W_GENERAL = 0.0  # raise to ~0.4 once T1 majors are added
+# === Scoring weights ===
+# v1.5: T1 majors (Straits Times) contribute via higher tier_base in
+# _vertical_salience (see scorer._TIER_BASE). W_GENERAL is reserved for a
+# future cross-source clustering signal ("appeared in N T1 outlets"); not
+# implemented yet, keep at 0.
+W_GENERAL = 0.0
 W_VERTICAL = 1.0
 RECENCY_HALFLIFE_HOURS = 36.0  # signal halves every 36h
 

@@ -24,9 +24,16 @@ from .router import _COMPILED
 log = logging.getLogger(__name__)
 
 
+_TIER_BASE = {
+    "major": 0.7,        # T1 broad business outlets (Straits Times) — salience oracle
+    "core": 0.5,         # T2 trade spine (Supply Chain Dive, Banking Dive, etc.)
+    "specialist": 0.3,   # T3 specialists (deBanked, Latent Space, etc.)
+}
+
+
 def _vertical_salience(article: Article) -> float:
     """0..1-ish score for how relevant/strong this article is for its bucket."""
-    base = 0.5 if article.source_tier == "core" else 0.3
+    base = _TIER_BASE.get(article.source_tier, 0.3)
 
     # Keyword-hit density inside the assigned bucket
     bucket_patterns = _COMPILED.get((article.vertical, article.subtopic), [])

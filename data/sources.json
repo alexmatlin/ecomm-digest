@@ -1,22 +1,23 @@
 {
-  "schema_version": "1.0",
-  "last_validated": "2026-06-09",
-  "validation_method": "WebFetch homepage + feed URL probe; each feed manually confirmed to return parseable RSS/Atom with recent items.",
+  "schema_version": "1.1",
+  "last_validated": "2026-06-10",
+  "validation_method": "feedparser probe with browser User-Agent; each feed manually confirmed to return parseable RSS/Atom with recent items.",
   "summary": {
-    "total_sources": 19,
+    "total_sources": 22,
     "by_vertical": {
       "ecommerce": 7,
       "fintech": 7,
       "ai": 7,
-      "cross_cutting": 2
+      "cross_cutting": 5
     },
     "by_content_type": {
       "full": 5,
-      "summary": 14
+      "summary": 17
     },
     "by_tier": {
+      "major": 1,
       "core": 8,
-      "specialist": 11
+      "specialist": 13
     }
   },
   "policy_defaults": {
@@ -357,6 +358,62 @@
       "cacheable": true,
       "status": "ok",
       "sample_title": "Choice Hotels promotes exec as CTO to support AI buildout"
+    },
+    {
+      "id": "straits-times-business",
+      "name": "The Straits Times — Business",
+      "feed_url": "https://www.straitstimes.com/news/business/rss.xml",
+      "homepage": "https://www.straitstimes.com/business",
+      "vertical": "cross_cutting",
+      "subtopics": ["marketplaces", "payments", "banking-wealth", "startups-funding", "platforms-tech"],
+      "tier": "major",
+      "access_type": "partial",
+      "access_notes": "Some articles paywalled, but RSS items include sufficient excerpts for routing and summarization.",
+      "content_type": "summary",
+      "avg_word_count": 50,
+      "llm_tier": "cheap",
+      "token_cap": 250,
+      "cacheable": true,
+      "status": "ok",
+      "notes": "Singapore broad business daily; acts as T1 salience oracle for APAC.",
+      "sample_title": "Sea's Shopee cuts hundreds of developer jobs during pivot to AI"
+    },
+    {
+      "id": "tech-in-asia",
+      "name": "Tech in Asia",
+      "feed_url": "https://www.techinasia.com/feed",
+      "homepage": "https://www.techinasia.com",
+      "vertical": "cross_cutting",
+      "subtopics": ["marketplaces", "startups-funding", "platforms-tech", "models"],
+      "tier": "specialist",
+      "access_type": "partial",
+      "access_notes": "Premium content paywalled, but RSS excerpts and free articles are accessible.",
+      "content_type": "summary",
+      "avg_word_count": 80,
+      "llm_tier": "cheap",
+      "token_cap": 300,
+      "cacheable": true,
+      "status": "ok",
+      "notes": "APAC tech/startup specialist; strong India + SEA coverage.",
+      "sample_title": "Samsung SDS partners AI startups to expand cloud security"
+    },
+    {
+      "id": "e27",
+      "name": "e27",
+      "feed_url": "https://e27.co/feed/",
+      "homepage": "https://e27.co",
+      "vertical": "cross_cutting",
+      "subtopics": ["startups-funding", "platforms-tech", "marketplaces"],
+      "tier": "specialist",
+      "access_type": "free",
+      "content_type": "summary",
+      "avg_word_count": 50,
+      "llm_tier": "cheap",
+      "token_cap": 250,
+      "cacheable": true,
+      "status": "ok",
+      "notes": "Singapore-based; heavy SEA startup-funding coverage. Replaces DealStreetAsia which explicitly blocks bots.",
+      "sample_title": "Malaysia's GreatAsic raises US$6.9m to pivot nation from chip assembly to indigenous design"
     }
   ],
   "failed": [
@@ -426,6 +483,24 @@
       "tried": ["/feed"],
       "all_403": true,
       "alternative": "Real User-Agent on the ingest worker should work."
+    },
+    {
+      "name": "DealStreetAsia",
+      "homepage": "https://www.dealstreetasia.com",
+      "vertical": "fintech",
+      "intended_subtopics": ["startups-funding"],
+      "status": "explicitly_blocks_bots",
+      "tried": ["/feed", "/feed/"],
+      "alternative": "Server returns HTTP 503 with body 'Temporarily Disabled to mitigate bot attacks'. Replaced by e27 for SEA startup coverage."
+    },
+    {
+      "name": "KrAsia",
+      "homepage": "https://kr-asia.com",
+      "vertical": "cross_cutting",
+      "intended_subtopics": ["marketplaces", "platforms-tech"],
+      "status": "feed_parse_error",
+      "tried": ["/feed", "/feed/"],
+      "alternative": "SAX 'not well-formed' on both — likely returns a login page or malformed XML."
     },
     {
       "name": "Fintech Brainfood",

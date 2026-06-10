@@ -155,38 +155,62 @@ def _score_buckets(text: str) -> Counter:
     return scores
 
 
+# Threshold: cross-vertical score must be at least this many times the
+# source-vertical score for us to override the source's declared vertical.
+# Higher = stickier source vertical. Set to 2.0 (need 2x evidence).
+_CROSS_VERTICAL_OVERRIDE_RATIO = 2.0
+
+
 def route(article: Article) -> Article:
     """
     Mutates article.vertical and article.subtopic, or leaves them None
     (which means: fallback bucket — log only, never displayed).
+
+    Rules:
+      1. For cross_cutting sources (TechCrunch, Crunchbase, T1 majors),
+         pick the bucket with the most keyword hits — no vertical bias.
+      2. For sources with a declared vertical, restrict to that vertical's
+         buckets UNLESS another vertical has 2x+ stronger keyword evidence.
+         This stops single-mention misfires like "Bank of America" pulling
+         a Modern Retail article into Fintech.
+      3. Boost source-declared subtopics within the chosen vertical.
     """
     text = f"{article.title}\n{article.body}"
     scores = _score_buckets(text)
 
-    # Bias toward the source's declared vertical/subtopics.
     if article.source_vertical and article.source_vertical != "cross_cutting":
-        for bucket in list(scores.keys()):
-            if bucket[0] == article.source_vertical:
-                scores[bucket] += 1
+        own = {k: v for k, v in scores.items() if k[0] == article.source_vertical}
+        other = {k: v for k, v in scores.items() if k[0] != article.source_vertical}
+        own_max = max(own.values(), default=0)
+        other_max = max(other.values(), default=0)
+
+        # Stay in source vertical unless cross-vertical evidence is overwhelming.
+        if own_max == 0 and other_max == 0:
+            # No keyword hits anywhere — fall through to last-resort logic below.
+            scores = Counter()
+        elif other_max < own_max * _CROSS_VERTICAL_OVERRIDE_RATIO:
+            scores = Counter(own)
+        # else: other vertical wins by a wide margin — keep full scores (don't filter)
+
+        # Boost source-declared subtopics within the kept buckets.
         for st in article.source_subtopics:
             key = (article.source_vertical, st)
             if key in scores:
-                scores[key] += 1
+                scores[key] += 2
 
     if not scores:
         # Last resort: if source has a single declared (vertical, subtopic),
         # accept it without keyword evidence (only for non-cross-cutting).
         if (
-            article.source_vertical != "cross_cutting"
+            article.source_vertical
+            and article.source_vertical != "cross_cutting"
             and len(article.source_subtopics) == 1
         ):
             article.vertical = article.source_vertical
             article.subtopic = article.source_subtopics[0]
             return article
-        # Otherwise fallback.
-        return article
+        return article  # fallback
 
-    # Pick the highest-scoring bucket.
     (vertical, subtopic), _ = scores.most_common(1)[0]
     article.vertical = vertical
     article.subtopic = subtopic
