@@ -1,10 +1,9 @@
 name: Generate digest
 
 on:
-  # Twice daily: 06:00 and 18:00 Singapore time (UTC+8) → 22:00 and 10:00 UTC
+  # Once daily: 07:00 Singapore time (UTC+8) → 23:00 UTC the previous day
   schedule:
-    - cron: "0 22 * * *"
-    - cron: "0 10 * * *"
+    - cron: "0 23 * * *"
   # Manual trigger from the Actions tab
   workflow_dispatch:
     inputs:
