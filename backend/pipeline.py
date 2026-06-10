@@ -25,12 +25,13 @@ import sys
 from collections import defaultdict
 
 from .config import (
-    LEAD_PER_VERTICAL, BRIEFINGS_PER_VERTICAL, VERTICALS,
+    LEAD_PER_VERTICAL, BRIEFINGS_PER_VERTICAL, BRIEFINGS_HARD_CAP,
+    SUBTOPIC_CAP_BASE, SUBTOPIC_CAP_BURST, VERTICALS,
 )
 from .ingest import Article, ingest_all
 from .dedup import dedupe
 from .router import route_all
-from .scorer import score_all
+from .scorer import score_all, lead_score
 from .state import load_seen, filter_unseen, save_seen
 from .render import render_all
 
@@ -48,13 +49,17 @@ def select(
     articles: list[Article],
 ) -> tuple[dict[str, Article | None], dict[str, list[Article]]]:
     """
-    Per vertical: top-scoring article → lead; next N → briefings.
-
-    Subtopic spread (two-pass):
-      Pass 1 — hard cap of 3 per subtopic. Walk score-ordered candidates;
-               skip any whose subtopic is already at 3.
-      Pass 2 — if we ended pass 1 below target, fill remaining slots from
-               leftover candidates (over-cap allowed) to avoid sparse pages.
+    Per vertical:
+      - Pick the LEAD using lead_score() (event-driven; favors action verbs,
+        dollar amounts; penalizes hedging and explainer prefixes; T1 boost).
+      - Pick BRIEFINGS using score(), with three passes:
+          Pass 1 — hard cap of SUBTOPIC_CAP_BASE per subtopic, target
+                   BRIEFINGS_PER_VERTICAL (14).
+          Pass 2 — if under target, spread-aware overflow fill to 14.
+          Pass 3 — burst: if any subtopic dominates a news cycle (e.g. 5+
+                   strong M&A stories), allow extras up to SUBTOPIC_CAP_BURST
+                   (6) per subtopic and BRIEFINGS_HARD_CAP (18) total, quality-
+                   gated. Never displaces existing picks — only adds slots.
     """
     by_vertical: dict[str, list[Article]] = defaultdict(list)
     for a in articles:
@@ -72,33 +77,36 @@ def select(
             logging.warning("select: %s has 0 candidates", v)
             continue
 
-        lead = candidates[0]
+        # --- Lead selection: use lead_score, not regular score ---
+        lead = max(candidates, key=lead_score)
         lead.is_lead = True
         leads[v] = lead
+        lead_lead_score = lead_score(lead)
+        logging.info(
+            "select %s: lead='%s...' score=%.3f lead_score=%.3f tier=%s",
+            v, lead.title[:50], lead.score, lead_lead_score, lead.source_tier,
+        )
 
-        remaining = candidates[LEAD_PER_VERTICAL:]
+        # --- Briefings: everything except the lead, score-ordered ---
+        remaining = [c for c in candidates if c is not lead]
         picks: list[Article] = []
         subtopic_counts: dict[str, int] = defaultdict(int)
         picked_ids: set[int] = set()
 
-        # Pass 1: hard cap 3-per-subtopic
+        # Pass 1: hard cap SUBTOPIC_CAP_BASE per subtopic
         for cand in remaining:
             if len(picks) >= BRIEFINGS_PER_VERTICAL:
                 break
-            if subtopic_counts[cand.subtopic] >= 3:
+            if subtopic_counts[cand.subtopic] >= SUBTOPIC_CAP_BASE:
                 continue
             picks.append(cand)
             picked_ids.add(id(cand))
             subtopic_counts[cand.subtopic] += 1
 
-        # Pass 2: overflow fill if still below target.
-        # Prefer under-represented subtopics first to preserve spread; within
-        # each subtopic, still score-order. This stops one dominant source
-        # (e.g. FreightWaves) from flooding the page when leftovers are biased.
+        # Pass 2: spread-aware overflow fill to target
         if len(picks) < BRIEFINGS_PER_VERTICAL:
             overflow_before = len(picks)
             leftover = [c for c in remaining if id(c) not in picked_ids]
-            # Sort leftover by (current subtopic count, -score) — lowest count + highest score wins
             leftover.sort(key=lambda c: (subtopic_counts[c.subtopic], -c.score))
             for cand in leftover:
                 if len(picks) >= BRIEFINGS_PER_VERTICAL:
@@ -112,11 +120,43 @@ def select(
                     v, len(picks) - overflow_before,
                 )
 
+        # Pass 3: burst — allow extras from capped subtopics if they clear a
+        # quality bar (so we don't crowd in weak fillers). Adds slots, never
+        # displaces existing picks.
+        if len(picks) < BRIEFINGS_HARD_CAP:
+            burst_before = len(picks)
+            # Quality bar: median score of all routed candidates in this vertical.
+            # Strong leftovers (≥ median) get a slot; weak ones don't.
+            all_scores = sorted([c.score for c in candidates])
+            median_score = all_scores[len(all_scores) // 2] if all_scores else 0.0
+            quality_bar = max(0.35, median_score)
+
+            leftover = [
+                c for c in remaining
+                if id(c) not in picked_ids
+                and c.score >= quality_bar
+                and subtopic_counts[c.subtopic] < SUBTOPIC_CAP_BURST
+            ]
+            leftover.sort(key=lambda c: -c.score)
+            for cand in leftover:
+                if len(picks) >= BRIEFINGS_HARD_CAP:
+                    break
+                if subtopic_counts[cand.subtopic] >= SUBTOPIC_CAP_BURST:
+                    continue
+                picks.append(cand)
+                picked_ids.add(id(cand))
+                subtopic_counts[cand.subtopic] += 1
+            if len(picks) > burst_before:
+                logging.info(
+                    "select %s: pass-3 burst added %d (quality_bar=%.2f)",
+                    v, len(picks) - burst_before, quality_bar,
+                )
+
         briefings[v] = picks
 
         logging.info(
-            "select %s: lead='%s...' briefings=%d (subtopic spread: %s)",
-            v, lead.title[:50], len(picks), dict(subtopic_counts),
+            "select %s: briefings=%d (subtopic spread: %s)",
+            v, len(picks), dict(subtopic_counts),
         )
 
     return leads, briefings

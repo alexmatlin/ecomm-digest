@@ -79,7 +79,10 @@ RECENCY_HALFLIFE_HOURS = 36.0  # signal halves every 36h
 
 # === Selection caps ===
 LEAD_PER_VERTICAL = 1
-BRIEFINGS_PER_VERTICAL = 14  # 4-5 rows of 3 → target 14 briefings + 1 lead = 15 cards
+BRIEFINGS_PER_VERTICAL = 14  # target — 4-5 rows of 3, fills most days
+BRIEFINGS_HARD_CAP = 18      # upper bound for burst days (6x3 grid)
+SUBTOPIC_CAP_BASE = 3        # default cap per subtopic in pass 1
+SUBTOPIC_CAP_BURST = 6       # max if subtopic dominates a news cycle (e.g. M&A spike)
 
 # === Dedup thresholds ===
 TITLE_FUZZY_THRESHOLD = 88  # rapidfuzz token_set_ratio cutoff for "same story"

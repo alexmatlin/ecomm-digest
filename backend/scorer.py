@@ -25,10 +25,117 @@ log = logging.getLogger(__name__)
 
 
 _TIER_BASE = {
-    "major": 0.7,        # T1 broad business outlets (Straits Times) — salience oracle
-    "core": 0.5,         # T2 trade spine (Supply Chain Dive, Banking Dive, etc.)
-    "specialist": 0.3,   # T3 specialists (deBanked, Latent Space, etc.)
+    "major": 0.5,        # T1 broad business outlets — equal to core for briefings
+    "core": 0.5,         # T2 trade spine
+    "specialist": 0.3,   # T3 specialists
 }
+
+# Lead-only tier multiplier — T1 stories surface as lead candidates without
+# crowding specialists out of briefing positions.
+_LEAD_TIER_MULTIPLIER = {
+    "major": 1.4,
+    "core": 1.0,
+    "specialist": 0.9,
+}
+
+# === Event-driven lead patterns (Q2: lead = biggest news event) ===
+
+# Strong positive signals: action verbs that indicate a discrete news event.
+_LEAD_ACTION_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in [
+        r"\bacquir(?:e|es|ed|ing)\b",
+        r"\bacquisition\b",
+        r"\bmerger\b",
+        r"\b(?:agrees? to )?buy(?:s|out)?\b.*\b(?:stake|shares?|company|firm)\b",
+        r"\braises?\s+\$",
+        r"\braised\s+\$",
+        r"\bsecures?\s+\$",
+        r"\bfiles?\s+(?:for\s+)?(?:an?\s+)?ipo\b",
+        r"\bfiles?\s+(?:draft\s+)?s-?1\b",
+        r"\blaunches?\b",
+        r"\bunveils?\b",
+        r"\brolls?\s+out\b",
+        r"\bdeploys?\b",
+        r"\bpartners?\s+(?:with|to)\b",
+        r"\bsigns?\s+deal\b",
+        r"\bcuts?\s+(?:jobs?|workforce|staff|hundreds?|thousands?)\b",
+        r"\blays?\s+off\b",
+        r"\bshuts?\s+down\b",
+        r"\bappoints?\b",
+        r"\bsteps?\s+down\b",
+        r"\bgoes?\s+(?:public|global)\b",
+        r"\bbans?\b",
+        r"\bsues?\b",
+        r"\bcharged\s+with\b",
+    ]
+]
+
+# Dollar amounts: $30M, $2.7bn, $500 million, 1.5 billion deal
+_LEAD_DOLLAR_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in [
+        r"\$\d+(?:\.\d+)?\s*[mbk]\b",
+        r"\$\d+(?:\.\d+)?\s*(?:million|billion|trillion)\b",
+        r"\b\d+(?:\.\d+)?\s*(?:million|billion|trillion)\b.*(?:deal|round|valuation|raise)",
+    ]
+]
+
+# Negative signals — hedging language disqualifies lead status.
+_LEAD_HEDGE_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in [
+        r"\b(?:considers?|considering)\b",
+        r"\bexplor(?:es?|ing)\b",
+        r"\b(?:could|may|might|potentially|reportedly)\b",
+        r"\?",  # question marks → speculation
+        r"\brumor(?:ed|s)?\b",
+    ]
+]
+
+# Explainer prefixes — great briefings, but not lead material.
+_LEAD_EXPLAINER_PREFIX_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in [
+        r"^\s*why\b",
+        r"^\s*how\b",
+        r"^\s*what\b",
+        r"^\s*inside\b",
+        r"^\s*the\s+(?:messy|future|state)\s+of\b",
+    ]
+]
+
+
+def _count_hits(patterns, text: str) -> int:
+    return sum(1 for p in patterns if p.search(text))
+
+
+def lead_score(article: Article) -> float:
+    """
+    Event-driven lead-worthiness score. Higher = more lead-worthy.
+
+    Layered on top of regular score() — only used for picking THE LEAD,
+    not for ordering briefings. Briefings still use score().
+
+    Formula:
+        lead_score = score × tier_multiplier × (1 + bonuses) × (1 − penalties)
+    """
+    base = score(article)
+    if base <= 0:
+        return 0.0
+
+    title = article.title or ""
+
+    # Tier multiplier (T1 majors get the lead boost)
+    tier_mult = _LEAD_TIER_MULTIPLIER.get(article.source_tier, 1.0)
+
+    # Positive signals (cap each contribution so one pattern can't dominate)
+    action_hits = _count_hits(_LEAD_ACTION_PATTERNS, title)
+    dollar_hits = _count_hits(_LEAD_DOLLAR_PATTERNS, title)
+    bonus = min(0.4, action_hits * 0.2) + min(0.3, dollar_hits * 0.3)
+
+    # Negative signals (cap penalty at -0.5)
+    hedge_hits = _count_hits(_LEAD_HEDGE_PATTERNS, title)
+    explainer_hits = _count_hits(_LEAD_EXPLAINER_PREFIX_PATTERNS, title)
+    penalty = min(0.5, hedge_hits * 0.3 + explainer_hits * 0.3)
+
+    return round(base * tier_mult * (1 + bonus) * (1 - penalty), 4)
 
 
 def _vertical_salience(article: Article) -> float:
