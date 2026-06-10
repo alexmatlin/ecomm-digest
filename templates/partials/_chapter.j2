@@ -58,20 +58,6 @@
             </div>
         </section>
 
-{% if numbers %}
-        <section class="numbers">
-            <div class="container">
-                <h2 class="numbers-title reveal">The week in numbers</h2>
-                <div class="numbers-grid reveal">
-{% for n in numbers %}                    <div class="number-item">
-                        <div class="number-value">{{ n.value }}</div>
-                        <div class="number-label">{{ n.label }}</div>
-                    </div>
-{% endfor %}                </div>
-            </div>
-        </section>
-{% endif %}
-
 {% include 'partials/_subscribe.j2' %}
     </main>
 

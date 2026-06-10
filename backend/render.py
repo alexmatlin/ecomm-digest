@@ -111,29 +111,6 @@ FILTER_CHIPS = {
     ],
 }
 
-# Fictional stats kept for v1. Will replace with real numbers in a later pass.
-NUMBERS = {
-    "ecommerce": [
-        {"value": "$1.18T", "label": "Global e-commerce GMV, Q1 2026"},
-        {"value": "+18.4%", "label": "YoY growth, US online retail"},
-        {"value": "$3.40", "label": "Average CPC, Amazon Sponsored Products"},
-        {"value": "22.7%", "label": "Apparel return rate, peak season"},
-    ],
-    "fintech": [
-        {"value": "$248B", "label": "Global stablecoin market cap"},
-        {"value": "+31%", "label": "YoY growth, cross-border B2B payments"},
-        {"value": "2.6%", "label": "Average global card MDR, Q1 2026"},
-        {"value": "14.2%", "label": "Share of US consumers using BNPL monthly"},
-    ],
-    "ai": [
-        {"value": "79.4%", "label": "SWE-bench-Verified, frontier model leader"},
-        {"value": "−47%", "label": "YoY change, inference cost per Mtok"},
-        {"value": "$420B", "label": "2026 hyperscaler capex, projected"},
-        {"value": "68%", "label": "Share of Fortune 500 with AI in production"},
-    ],
-}
-
-
 def _age_label(article: Article) -> str:
     """'Today' / '1d ago' / '2d ago' style label for cards."""
     h = article.age_hours()
@@ -189,6 +166,21 @@ def _index_snippet(lead: Article | None) -> str:
     return lead.title
 
 
+def _index_lead_brief(lead: Article | None) -> dict:
+    """Title + URL + one-sentence snippet for the home page topic card."""
+    if not lead:
+        return {
+            "title": "Today's stories are still being curated.",
+            "url": "#",
+            "snippet": "Check back this afternoon.",
+        }
+    return {
+        "title": lead.title,
+        "url": lead.url,
+        "snippet": _index_snippet(lead),
+    }
+
+
 def render_all(
     leads: dict[str, Article | None],
     briefings: dict[str, list[Article]],
@@ -217,7 +209,6 @@ def render_all(
             "lead": leads.get(vertical),
             "briefings": briefings.get(vertical, []),
             "filter_chips": FILTER_CHIPS[vertical],
-            "numbers": NUMBERS[vertical],
             "subtopic_labels": SUBTOPIC_LABELS,
         }
         tpl = env.get_template(f"{vertical}.j2")
@@ -232,13 +223,13 @@ def render_all(
         )
 
     # --- Index page ---
-    snippets = {v: _index_snippet(leads.get(v)) for v in ("ecommerce", "fintech", "ai")}
+    leads_brief = {v: _index_lead_brief(leads.get(v)) for v in ("ecommerce", "fintech", "ai")}
     idx_ctx = {
         **PAGE_META["index"],
         "active": "index",
         "today_str": today,
         "current_year": year,
-        "snippets": snippets,
+        "leads_brief": leads_brief,
     }
     tpl = env.get_template("index.j2")
     out = tpl.render(**idx_ctx)

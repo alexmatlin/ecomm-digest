@@ -826,3 +826,101 @@ a { color: inherit; text-decoration: none; }
         font-size: 11.5px;
     }
 }
+
+/* ==========================================================================
+   Phase 1 design polish — appended at end so it overrides earlier rules
+   ========================================================================== */
+
+/* --- Larger, more prominent date in hero eyebrow --- */
+.hero-eyebrow-date {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+}
+
+/* --- Tighter "Today's lead" block on chapter pages --- */
+.featured {
+    padding: 22px 0 24px;
+}
+.story-lead h3 {
+    font-size: clamp(17px, 2vw, 21px);
+    margin-bottom: 8px;
+}
+.story-lead p {
+    font-size: 13.5px;
+    margin-bottom: 10px;
+}
+.read-more {
+    font-size: 12.5px;
+}
+
+/* --- Sticky filter bar on chapter pages --- */
+.filter-bar {
+    position: sticky;
+    /* 44px ≈ shrunk header height. Page is always scrolled past full header
+       by the time filter-bar pins, so this avoids overlap. */
+    top: 44px;
+    z-index: 20;
+    background: var(--bg);
+    padding: 10px 0;
+    margin-top: 0;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--rule);
+}
+
+/* --- Index page: lead headline above existing snippet --- */
+.topic-headline {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* --- Subtle subtopic color coding via CSS custom property (--topic-h)
+       Each topic defines a hue once; light/dark mode derive shades. --- */
+.story-card[data-topic="marketplaces"]      { --topic-h: 20;  }
+.story-card[data-topic="dtc-brands"]        { --topic-h: 345; }
+.story-card[data-topic="retail-media"]      { --topic-h: 35;  }
+.story-card[data-topic="logistics"]         { --topic-h: 185; }
+.story-card[data-topic="social-live"]       { --topic-h: 290; }
+.story-card[data-topic="platforms-tech"]    { --topic-h: 220; }
+.story-card[data-topic="payments"]          { --topic-h: 150; }
+.story-card[data-topic="banking-wealth"]    { --topic-h: 210; }
+.story-card[data-topic="lending-credit"]    { --topic-h: 40;  }
+.story-card[data-topic="stablecoins-crypto"]{ --topic-h: 25;  }
+.story-card[data-topic="embedded-finance"]  { --topic-h: 95;  }
+.story-card[data-topic="regulation"]        { --topic-h: 355; }
+.story-card[data-topic="models"]            { --topic-h: 250; }
+.story-card[data-topic="agents"]            { --topic-h: 185; }
+.story-card[data-topic="infrastructure"]    { --topic-h: 215; }
+.story-card[data-topic="enterprise"]        { --topic-h: 20;  }
+.story-card[data-topic="startups-funding"]  { --topic-h: 130; }
+
+.story-card .tag-alt {
+    color: hsl(var(--topic-h, 20), 45%, 38%);
+    border-color: hsl(var(--topic-h, 20), 50%, 70%);
+}
+.story-card .tag-alt:hover {
+    background: hsl(var(--topic-h, 20), 50%, 45%);
+    color: #FFFFFF;
+    border-color: hsl(var(--topic-h, 20), 50%, 45%);
+}
+
+:root[data-theme="dark"] .story-card .tag-alt {
+    color: hsl(var(--topic-h, 20), 55%, 75%);
+    border-color: hsl(var(--topic-h, 20), 35%, 38%);
+}
+:root[data-theme="dark"] .story-card .tag-alt:hover {
+    background: hsl(var(--topic-h, 20), 50%, 55%);
+    color: #1F1F1E;
+    border-color: hsl(var(--topic-h, 20), 50%, 55%);
+}
+

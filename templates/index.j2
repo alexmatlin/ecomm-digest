@@ -11,7 +11,6 @@
             <div class="container">
                 <p class="hero-eyebrow">E-commerce · Fintech · AI · <span class="hero-eyebrow-date">{{ today_str }}</span></p>
                 <h1 class="hero-title">The three sectors reshaping how value moves.</h1>
-                <p class="hero-lede">A daily distillation of the most consequential moves across e-commerce, fintech, and AI — read by 42,000+ operators, builders, and investors.</p>
             </div>
         </section>
 
@@ -29,8 +28,9 @@
                         </svg>
                         <h3>E-commerce</h3>
                         <p>Marketplaces, DTC brands, retail media, logistics, and the operators reshaping how goods move online.</p>
-                        <div class="topic-latest">Latest</div>
-                        <p class="topic-snippet">{{ snippets.ecommerce }}</p>
+                        <div class="topic-latest">Today's lead</div>
+                        <h4 class="topic-headline">{{ leads_brief.ecommerce.title }}</h4>
+                        <p class="topic-snippet">{{ leads_brief.ecommerce.snippet }}</p>
                         <div class="topic-cta">Explore E-commerce</div>
                     </a>
 
@@ -43,8 +43,9 @@
                         </svg>
                         <h3>Fintech</h3>
                         <p>Payments, banking, stablecoins, embedded finance, and the rails carrying the next trillion in commerce.</p>
-                        <div class="topic-latest">Latest</div>
-                        <p class="topic-snippet">{{ snippets.fintech }}</p>
+                        <div class="topic-latest">Today's lead</div>
+                        <h4 class="topic-headline">{{ leads_brief.fintech.title }}</h4>
+                        <p class="topic-snippet">{{ leads_brief.fintech.snippet }}</p>
                         <div class="topic-cta">Explore Fintech</div>
                     </a>
 
@@ -54,8 +55,9 @@
                         </svg>
                         <h3>AI</h3>
                         <p>Foundation models, agents, infrastructure, and the businesses being rebuilt around a new compute curve.</p>
-                        <div class="topic-latest">Latest</div>
-                        <p class="topic-snippet">{{ snippets.ai }}</p>
+                        <div class="topic-latest">Today's lead</div>
+                        <h4 class="topic-headline">{{ leads_brief.ai.title }}</h4>
+                        <p class="topic-snippet">{{ leads_brief.ai.snippet }}</p>
                         <div class="topic-cta">Explore AI</div>
                     </a>
                 </div>
