@@ -54,7 +54,7 @@ RULES: dict[tuple[str, str], list[str]] = {
     ("ecommerce", "platforms-tech"): [
         r"shopify", r"\bbigcommerce\b", r"woocommerce", r"magento",
         r"checkout (?:flow|button)", r"headless commerce", r"\bpwa\b",
-        r"shelf label", r"electronic shelf", r"ai crawler", r"bot block",
+        r"shelf labels?", r"electronic shelf", r"ai crawlers?", r"bot block",
         r"licensing deal.*content", r"ai (?:training|crawl)",
     ],
     # ----- FINTECH -----
