@@ -69,6 +69,12 @@ class Article:
     summary: Optional[str] = None  # editorial 2-sentence summary
     is_lead: bool = False
 
+    # Cross-source salience clustering: which source IDs covered this same story.
+    # Starts as just this article's source; dedup merges duplicates and unions
+    # the source lists onto the surviving "best" article.
+    cluster_sources: list[str] = field(default_factory=list)
+    cluster_size: int = 1
+
     def age_hours(self, now: Optional[datetime] = None) -> float:
         if self.published_at is None:
             return 9999.0
@@ -187,6 +193,8 @@ def fetch_one(source: dict) -> list[Article]:
             title=title,
             body=body,
             published_at=published_at,
+            cluster_sources=[source["id"]],
+            cluster_size=1,
         )
         articles.append(article)
 

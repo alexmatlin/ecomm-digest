@@ -71,25 +71,45 @@ def _norm_title(t: str) -> str:
     return " ".join(t.lower().split())
 
 
+def _merge_clusters(a: Article, b: Article) -> list[str]:
+    """Return the deduped union of two articles' source clusters, preserving order."""
+    seen = set()
+    out: list[str] = []
+    for src in a.cluster_sources + b.cluster_sources:
+        if src not in seen:
+            seen.add(src)
+            out.append(src)
+    return out
+
+
 def dedupe(articles: list[Article]) -> list[Article]:
     """
-    Two-pass dedup:
+    Two-pass dedup that ALSO tracks cross-source clustering:
       1. Exact match on canonical URL.
       2. Fuzzy title match (rapidfuzz token_set_ratio >= threshold).
 
-    When duplicates are found, keep the one with the longest body
-    (preferring richer source content), tie-break on tier (core wins).
+    When duplicates are found:
+      - Keep the "best" article (longest body; tie-break: core tier wins, then newer).
+      - Merge `cluster_sources` from both onto the surviving article so we
+        retain the salience signal of "this story was covered by N sources."
     """
     if not articles:
         return []
 
-    # Pass 1: URL dedup. Group by canonical URL, keep the "best" per group.
+    # Pass 1: URL dedup. Group by canonical URL, keep the best per group,
+    # but union the cluster_sources of all merged duplicates.
     by_url: dict[str, Article] = {}
     for a in articles:
         cu = canonical_url(a.url)
         existing = by_url.get(cu)
-        if existing is None or _is_better(a, existing):
+        if existing is None:
             by_url[cu] = a
+        else:
+            merged_sources = _merge_clusters(existing, a)
+            winner = a if _is_better(a, existing) else existing
+            winner.cluster_sources = merged_sources
+            winner.cluster_size = len(merged_sources)
+            by_url[cu] = winner
 
     after_url = list(by_url.values())
     log.info(
@@ -106,9 +126,15 @@ def dedupe(articles: list[Article]) -> list[Article]:
         merged = False
         for i, k in enumerate(kept):
             if fuzz.token_set_ratio(cand_norm, _norm_title(k.title)) >= TITLE_FUZZY_THRESHOLD:
-                # Same story. Keep whichever is "better".
+                # Same story. Merge clusters AND keep whichever article is "better".
+                merged_sources = _merge_clusters(candidate, k)
                 if _is_better(candidate, k):
+                    candidate.cluster_sources = merged_sources
+                    candidate.cluster_size = len(merged_sources)
                     kept[i] = candidate
+                else:
+                    k.cluster_sources = merged_sources
+                    k.cluster_size = len(merged_sources)
                 merged = True
                 break
         if not merged:
@@ -121,6 +147,25 @@ def dedupe(articles: list[Article]) -> list[Article]:
         len(after_url) - len(kept),
         TITLE_FUZZY_THRESHOLD,
     )
+
+    # Diagnostic: log top clusters by size (signal of cross-source salience).
+    multi_source = [a for a in kept if a.cluster_size >= 2]
+    if multi_source:
+        multi_source.sort(key=lambda a: -a.cluster_size)
+        log.info(
+            "cluster signal: %d multi-source stories (of %d total). top:",
+            len(multi_source), len(kept),
+        )
+        for a in multi_source[:5]:
+            log.info(
+                "  cluster_size=%d sources=%s title=%s",
+                a.cluster_size,
+                ",".join(a.cluster_sources),
+                a.title[:80],
+            )
+    else:
+        log.info("cluster signal: no multi-source stories this run")
+
     return kept
 
 

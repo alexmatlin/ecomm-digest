@@ -1,23 +1,23 @@
 {
-  "schema_version": "1.1",
-  "last_validated": "2026-06-10",
-  "validation_method": "feedparser probe with browser User-Agent; each feed manually confirmed to return parseable RSS/Atom with recent items.",
+  "schema_version": "1.2",
+  "last_validated": "2026-06-12",
+  "validation_method": "feedparser probe with browser User-Agent; each feed manually confirmed to return parseable RSS/Atom with recent items and usable body excerpts.",
   "summary": {
-    "total_sources": 22,
+    "total_sources": 26,
     "by_vertical": {
-      "ecommerce": 7,
+      "ecommerce": 8,
       "fintech": 7,
       "ai": 7,
-      "cross_cutting": 5
+      "cross_cutting": 8
     },
     "by_content_type": {
       "full": 5,
-      "summary": 17
+      "summary": 21
     },
     "by_tier": {
-      "major": 1,
-      "core": 8,
-      "specialist": 13
+      "major": 3,
+      "core": 9,
+      "specialist": 14
     }
   },
   "policy_defaults": {
@@ -414,6 +414,79 @@
       "status": "ok",
       "notes": "Singapore-based; heavy SEA startup-funding coverage. Replaces DealStreetAsia which explicitly blocks bots.",
       "sample_title": "Malaysia's GreatAsic raises US$6.9m to pivot nation from chip assembly to indigenous design"
+    },
+    {
+      "id": "cna",
+      "name": "CNA",
+      "feed_url": "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6511",
+      "homepage": "https://www.channelnewsasia.com/business",
+      "vertical": "cross_cutting",
+      "subtopics": ["marketplaces", "payments", "banking-wealth", "startups-funding", "platforms-tech", "regulation"],
+      "tier": "major",
+      "access_type": "free",
+      "content_type": "summary",
+      "avg_word_count": 35,
+      "llm_tier": "cheap",
+      "token_cap": 250,
+      "cacheable": true,
+      "status": "ok",
+      "notes": "Singapore-based broadcaster; second T1 APAC salience oracle. Feed (category 6511) mixes broad APAC business + politics + regional news — router will keyword-filter; non-business stories drop to fallback bucket as designed. CNA does not appear to expose a strictly business-only RSS publicly.",
+      "sample_title": "China backs next generation of tech champions as new rules reshape path overseas"
+    },
+    {
+      "id": "scmp-business",
+      "name": "South China Morning Post — Business",
+      "feed_url": "https://www.scmp.com/rss/91/feed",
+      "homepage": "https://www.scmp.com/business",
+      "vertical": "cross_cutting",
+      "subtopics": ["marketplaces", "payments", "banking-wealth", "startups-funding", "platforms-tech", "models", "regulation"],
+      "tier": "major",
+      "access_type": "partial",
+      "access_notes": "Site is metered/paywalled but RSS items include ~500-char excerpts, sufficient for routing and 2-sentence summarization.",
+      "content_type": "summary",
+      "avg_word_count": 85,
+      "llm_tier": "cheap",
+      "token_cap": 400,
+      "cacheable": true,
+      "status": "ok",
+      "notes": "HK-based; third T1 APAC salience oracle. Strong HK + China business coverage, complements ST (Singapore) and CNA (broad SG/SEA).",
+      "sample_title": "Hong Kong can be more than New York and Silicon Valley combined: Paul Chan"
+    },
+    {
+      "id": "rest-of-world",
+      "name": "Rest of World",
+      "feed_url": "https://restofworld.org/feed/",
+      "homepage": "https://restofworld.org",
+      "vertical": "cross_cutting",
+      "subtopics": ["models", "infrastructure", "marketplaces", "platforms-tech", "startups-funding"],
+      "tier": "core",
+      "access_type": "free",
+      "content_type": "summary",
+      "avg_word_count": 55,
+      "llm_tier": "cheap",
+      "token_cap": 300,
+      "cacheable": true,
+      "status": "ok",
+      "notes": "Best-in-class tech reporting in Asia/emerging markets. Fills the APAC×AI gap — stories like 'The Great AI Divide: U.S. and Chinese dominance' route naturally to ai/models or ai/infrastructure.",
+      "sample_title": "China builds a rival satellite constellation as SpaceX goes public"
+    },
+    {
+      "id": "the-low-down",
+      "name": "The Low Down — Momentum Works",
+      "feed_url": "https://thelowdown.momentum.asia/feed/",
+      "homepage": "https://thelowdown.momentum.asia",
+      "vertical": "ecommerce",
+      "subtopics": ["marketplaces", "platforms-tech", "social-live", "dtc-brands"],
+      "tier": "specialist",
+      "access_type": "free",
+      "content_type": "summary",
+      "avg_word_count": 45,
+      "llm_tier": "cheap",
+      "token_cap": 250,
+      "cacheable": true,
+      "status": "ok",
+      "notes": "SG-based analyst commentary on SEA commerce. Slower cadence (weekly-ish). RSS excerpts include a 'The post … first appeared on The Low Down — Momentum Works.' WordPress boilerplate; LLM prompt should ignore it.",
+      "sample_title": "What can we learn from the Food Republic exit of Beijing"
     }
   ],
   "failed": [
@@ -491,7 +564,35 @@
       "intended_subtopics": ["startups-funding"],
       "status": "explicitly_blocks_bots",
       "tried": ["/feed", "/feed/"],
+      "retried": "2026-06-12 — still SAX 'mismatched tag' (block unchanged).",
       "alternative": "Server returns HTTP 503 with body 'Temporarily Disabled to mitigate bot attacks'. Replaced by e27 for SEA startup coverage."
+    },
+    {
+      "name": "Analytics India Magazine",
+      "homepage": "https://analyticsindiamag.com",
+      "vertical": "ai",
+      "intended_subtopics": ["models", "startups-funding"],
+      "status": "no_feed_exposed",
+      "tried": ["/feed/", "/rss"],
+      "alternative": "Both URLs return HTML (status 200, content-type text/html) rather than RSS. Site has dropped public RSS. Could scrape category index pages if AI India coverage becomes a priority."
+    },
+    {
+      "name": "Nikkei Asia",
+      "homepage": "https://asia.nikkei.com",
+      "vertical": "cross_cutting",
+      "intended_subtopics": ["banking-wealth", "marketplaces", "models"],
+      "status": "paywalled_signal_only_not_supported",
+      "tried": ["/rss/feed/nar"],
+      "alternative": "Feed reachable with 50 entries but items lack pubDates and are paywalled. Per spec, signal-only sources need cross-source salience clustering (Q4 deferred) before useful. Revisit when clustering ships."
+    },
+    {
+      "name": "Momentum Works (direct domain)",
+      "homepage": "https://momentum.asia",
+      "vertical": "ecommerce",
+      "intended_subtopics": ["marketplaces"],
+      "status": "feed_parse_error",
+      "tried": ["/feed/"],
+      "alternative": "SAX 'mismatched tag'. The content lives at thelowdown.momentum.asia (subdomain), which we already added as the-low-down."
     },
     {
       "name": "KrAsia",
@@ -514,45 +615,52 @@
   ],
   "coverage_map": {
     "ecommerce": {
-      "marketplaces": ["techcrunch (cross-cutting)"],
-      "dtc-brands": ["modern-retail"],
+      "marketplaces": ["techcrunch (cross-cutting)", "straits-times-business", "cna", "scmp-business", "tech-in-asia", "e27", "the-low-down"],
+      "dtc-brands": ["modern-retail", "the-low-down"],
       "retail-media": ["digiday", "adexchanger", "modern-retail"],
       "logistics": ["supply-chain-dive", "freightwaves"],
-      "social-live": [],
-      "platforms-tech": ["techcrunch", "digiday", "modern-retail"]
+      "social-live": ["the-low-down"],
+      "platforms-tech": ["techcrunch", "digiday", "modern-retail", "tech-in-asia", "e27", "rest-of-world", "the-low-down", "scmp-business"]
     },
     "fintech": {
-      "payments": ["payments-dive", "finextra"],
-      "banking-wealth": ["banking-dive", "finextra"],
+      "payments": ["payments-dive", "finextra", "straits-times-business", "cna", "scmp-business"],
+      "banking-wealth": ["banking-dive", "finextra", "straits-times-business", "cna", "scmp-business"],
       "lending-credit": ["debanked"],
       "stablecoins-crypto": ["coindesk", "theblock"],
       "embedded-finance": ["finextra"],
-      "regulation": ["finextra", "banking-dive", "payments-dive"]
+      "regulation": ["finextra", "banking-dive", "payments-dive", "straits-times-business", "cna", "scmp-business"]
     },
     "ai": {
-      "models": ["import-ai", "openai-news", "google-deepmind"],
+      "models": ["import-ai", "openai-news", "google-deepmind", "tech-in-asia", "rest-of-world", "scmp-business"],
       "agents": ["latent-space"],
-      "infrastructure": ["next-platform", "latent-space"],
+      "infrastructure": ["next-platform", "latent-space", "rest-of-world"],
       "enterprise": ["cio-dive"],
       "regulation": ["import-ai", "openai-news"],
-      "startups-funding": ["crunchbase-news", "techcrunch", "openai-news"]
+      "startups-funding": ["crunchbase-news", "techcrunch", "openai-news", "tech-in-asia", "e27", "rest-of-world", "straits-times-business", "cna", "scmp-business"]
     }
   },
   "known_gaps": [
     {
-      "subtopic": "ecommerce/marketplaces",
-      "severity": "medium",
-      "note": "Marketplace Pulse has no public RSS. Only TechCrunch covers this as cross-cutting. Worth manual research for a marketplaces-native source."
-    },
-    {
-      "subtopic": "ecommerce/social-live",
-      "severity": "high",
-      "note": "Zero coverage. The Low Down / Momentum Works needs checking; Tech in Asia is paywalled. This is a real gap for v1."
-    },
-    {
       "subtopic": "ai/regulation",
       "severity": "low",
       "note": "Import AI covers AI policy regularly but isn't dedicated. Lawfare blocked. Consider adding Politico AI coverage."
+    }
+  ],
+  "resolved_gaps": [
+    {
+      "subtopic": "ecommerce/social-live",
+      "resolved_in": "schema_version 1.2",
+      "by": "Added the-low-down (SEA commerce essays cover social/live commerce themes)."
+    },
+    {
+      "subtopic": "ecommerce/marketplaces",
+      "resolved_in": "schema_version 1.2",
+      "by": "Tech in Asia + e27 + The Low Down + 3 APAC majors now feed marketplaces stories. Marketplace Pulse still has no RSS but coverage is now broad."
+    },
+    {
+      "subtopic": "ai (APAC angle)",
+      "resolved_in": "schema_version 1.2",
+      "by": "Added rest-of-world as PRIMARY for APAC AI gap (stories like 'The Great AI Divide: U.S. and Chinese dominance'). SCMP also contributes."
     }
   ]
 }

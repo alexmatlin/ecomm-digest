@@ -69,13 +69,20 @@ SUBTOPIC_LABELS = {
 }
 
 # === Scoring weights ===
-# v1.5: T1 majors (Straits Times) contribute via higher tier_base in
-# _vertical_salience (see scorer._TIER_BASE). W_GENERAL is reserved for a
-# future cross-source clustering signal ("appeared in N T1 outlets"); not
-# implemented yet, keep at 0.
+# v1.5: T1 majors contribute via higher tier_base in _vertical_salience
+# (see scorer._TIER_BASE). W_GENERAL is reserved for future use; keep at 0.
 W_GENERAL = 0.0
 W_VERTICAL = 1.0
 RECENCY_HALFLIFE_HOURS = 36.0  # signal halves every 36h
+
+# Cross-source salience clustering (v1.6).
+# When the same story shows up in N sources, multiply the score by
+#     (1 + log(N) × coefficient)
+# Briefings: moderate boost. Specialists shouldn't be drowned by multi-T1 stories.
+# Leads: stronger boost. Cluster size is the cleanest "this is the day's biggest
+#        news" signal — exactly what a lead is supposed to be.
+CLUSTER_BOOST_BRIEFING = 0.3   # n=2 → 1.21x, n=3 → 1.33x, n=5 → 1.48x
+CLUSTER_BOOST_LEAD     = 0.6   # n=2 → 1.42x, n=3 → 1.66x, n=5 → 1.97x
 
 # === Selection caps ===
 LEAD_PER_VERTICAL = 1

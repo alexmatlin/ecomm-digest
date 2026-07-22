@@ -137,9 +137,9 @@ that span verticals, e.g. TechCrunch, Straits Times).
 - AI: `models`, `agents`, `infrastructure`, `enterprise`, `regulation` (shared), `startups-funding`
 
 **3 source tiers**:
-- `major` (T1): broad business outlets, salience oracle. Currently 1: Straits Times Business.
-- `core` (T2): trade-spine specialists (Banking Dive, Supply Chain Dive, etc.)
-- `specialist` (T3): niche specialists (deBanked, Latent Space, etc.)
+- `major` (T1): broad business outlets, salience oracle. Currently 3: Straits Times Business, CNA, SCMP Business.
+- `core` (T2): trade-spine specialists (Banking Dive, Supply Chain Dive, Rest of World, etc.)
+- `specialist` (T3): niche specialists (deBanked, Latent Space, The Low Down, etc.)
 
 `_TIER_BASE` in scorer.py: major=0.5, core=0.5, specialist=0.3. T1 boost comes
 from the lead-only multiplier (1.4×) in `lead_score()`, not from briefing-time
@@ -213,19 +213,26 @@ Captured in conversation but explicitly held for now:
 1. **Cross-source salience clustering** (Q4 deferred). Highest-leverage signal
    for lead selection — when same story appears in 2+ sources, boost score.
    Requires modifying dedup to track sources instead of discarding duplicates.
-2. **APAC AI source** — currently no APAC-specific AI source (Tech in Asia
-   helps but is broad). Worth a feed-hunt session.
-3. **More T1 majors** (CNA Business, SCMP Business) — strengthens
-   cross-validation signal.
-4. **Router keyword tuning** — ~35–78 fallback items per run; some are
-   genuine noise, some are real misses. Sift periodically.
-5. **Editor's note in chapter hero** — replace static brand copy with
+   Now more impactful with 3 T1 majors providing real cross-validation potential.
+2. **Router keyword tuning** — ~140 fallback items per run after APAC additions
+   (CNA + SCMP add lots of broad-business/politics noise). Some are genuine
+   noise (Singapore MRT reliability), some are real misses. Also: ambiguous
+   keyword matches (e.g. "visa scandal" routed to fintech/payments). Sift
+   periodically.
+3. **Editor's note in chapter hero** — replace static brand copy with
    LLM-generated 1-line preview of the day. ~+3¢ per run.
-6. **Real "Week in numbers"** — pull from a stats API, hand-curate weekly, or
+4. **Real "Week in numbers"** — pull from a stats API, hand-curate weekly, or
    leave deleted.
-7. **Subscribe form wiring** — connect to an email service.
-8. **About page** — write content or hide the link.
-9. **Favicon dark-mode variant**.
+5. **Subscribe form wiring** — connect to an email service. (Currently
+   visually disabled with "Coming soon" label.)
+6. **About page** — write content. (Currently link hidden in the footer.)
+7. **Favicon dark-mode variant**.
+8. **Analytics India Magazine** — no public RSS; would require HTML scraping.
+9. **DealStreetAsia** — still explicitly bot-blocked (`/feed/` returns 503
+   "Temporarily Disabled to mitigate bot attacks"). e27 replaces it. Re-check
+   periodically.
+10. **Nikkei Asia (signal-only)** — feed reachable but paywalled; useful only
+    once cross-source clustering ships.
 
 ---
 

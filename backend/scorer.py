@@ -17,7 +17,10 @@ import logging
 import math
 import re
 
-from .config import W_VERTICAL, RECENCY_HALFLIFE_HOURS
+from .config import (
+    W_VERTICAL, RECENCY_HALFLIFE_HOURS,
+    CLUSTER_BOOST_BRIEFING, CLUSTER_BOOST_LEAD,
+)
 from .ingest import Article
 from .router import _COMPILED
 
@@ -106,23 +109,40 @@ def _count_hits(patterns, text: str) -> int:
     return sum(1 for p in patterns if p.search(text))
 
 
+def _cluster_boost(article: Article, coefficient: float) -> float:
+    """
+    Multiplier for cross-source salience: (1 + log(cluster_size) × coefficient).
+    Singleton clusters → 1.0 (no effect). Multi-source clusters scale up
+    smoothly with diminishing returns.
+    """
+    n = max(1, getattr(article, "cluster_size", 1) or 1)
+    return 1.0 + math.log(n) * coefficient
+
+
 def lead_score(article: Article) -> float:
     """
     Event-driven lead-worthiness score. Higher = more lead-worthy.
 
     Layered on top of regular score() — only used for picking THE LEAD,
-    not for ordering briefings. Briefings still use score().
+    not for ordering briefings.
 
     Formula:
-        lead_score = score × tier_multiplier × (1 + bonuses) × (1 − penalties)
+        base   = w_vertical × vertical_salience × recency_decay
+        lead_score = base × cluster_boost(LEAD) × tier_mult
+                          × (1 + bonuses) × (1 − penalties)
+
+    Note: cluster_boost is computed fresh here (not inherited from score())
+    so leads can use a stronger coefficient than briefings.
     """
-    base = score(article)
+    if not article.vertical or not article.subtopic:
+        return 0.0
+    base = W_VERTICAL * _vertical_salience(article) * _recency_decay(article)
     if base <= 0:
         return 0.0
 
     title = article.title or ""
 
-    # Tier multiplier (T1 majors get the lead boost)
+    cluster_mult = _cluster_boost(article, CLUSTER_BOOST_LEAD)
     tier_mult = _LEAD_TIER_MULTIPLIER.get(article.source_tier, 1.0)
 
     # Positive signals (cap each contribution so one pattern can't dominate)
@@ -135,7 +155,7 @@ def lead_score(article: Article) -> float:
     explainer_hits = _count_hits(_LEAD_EXPLAINER_PREFIX_PATTERNS, title)
     penalty = min(0.5, hedge_hits * 0.3 + explainer_hits * 0.3)
 
-    return round(base * tier_mult * (1 + bonus) * (1 - penalty), 4)
+    return round(base * cluster_mult * tier_mult * (1 + bonus) * (1 - penalty), 4)
 
 
 def _vertical_salience(article: Article) -> float:
@@ -171,9 +191,18 @@ def _recency_decay(article: Article) -> float:
 
 
 def score(article: Article) -> float:
+    """
+    Briefing-ordering score:
+        score = w_vertical × vertical_salience × recency_decay × cluster_boost(BRIEFING)
+    """
     if not article.vertical or not article.subtopic:
         return 0.0
-    s = W_VERTICAL * _vertical_salience(article) * _recency_decay(article)
+    s = (
+        W_VERTICAL
+        * _vertical_salience(article)
+        * _recency_decay(article)
+        * _cluster_boost(article, CLUSTER_BOOST_BRIEFING)
+    )
     return round(s, 4)
 
 
