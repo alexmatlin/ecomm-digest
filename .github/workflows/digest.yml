@@ -1,10 +1,11 @@
 name: Generate digest
 
 on:
-  # Once daily: 07:00 Singapore time (UTC+8) → 23:00 UTC the previous day
-  schedule:
-    - cron: "0 23 * * *"
-  # Manual trigger from the Actions tab
+  # Daily schedule PAUSED — no autorun. To resume, uncomment the schedule
+  # block below (07:00 SGT = 23:00 UTC the previous day).
+  # schedule:
+  #   - cron: "0 23 * * *"
+  # Manual trigger still works — Actions tab → "Generate digest" → "Run workflow".
   workflow_dispatch:
     inputs:
       no_llm:
